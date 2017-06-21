@@ -1,0 +1,100 @@
+
+# 시계열 분석: 기초
+
+---
+## 의류 판매량 데이터
+
+```{r}
+closale <- read.csv('closale.csv')
+head(closale)
+View(closale)
+```
+
+## 날짜 변환
+
+```{r}
+str(closale)
+
+library(zoo)
+closale$date <- as.yearmon(closale$date)
+
+```
+
+
+## 시각화
+
+```{r}
+plot(closale, type='l')
+```
+```{r}
+plot(closale, type='l', lty=4, main="미국 의류 판매", xlab="연도", ylab="판매량")
+```
+
+
+
+## 이동평균(moving average)
+* 가장 흔히 쓰이는 평활법
+* 일정 기간 간격(예: ±2개월)으로 평균
+
+```{r}
+
+mov.avr <- rollmean(closale$sales, 5, na.pad = T)  # 앞뒤에 두달은 없기 때문에 na.pad=T 해주면 NA로 채워줌
+mov.avr
+
+```
+
+```{r}
+
+plot(closale, type='l', lty=4, main="미국 의류 판매", xlab="연도", ylab="판매량")
+lines(closale$date, mov.avr, col='red', lwd=3)
+
+```
+
+
+## 이동 중간값(moving median)
+- 이동 평균과 동일하나 평균 대신 중간값 사용
+
+```{r}
+
+mov.med <- rollmedian(closale$sales, 5, na.pad=T)
+mov.med
+
+```
+
+```{r}
+
+plot(closale, type='l', lty=4, main="미국 의류 판매", xlab="연도", ylab="판매량")
+lines(closale$date, mov.med, col='red', lwd=3)
+
+```
+
+
+국소 가중 회귀(local regression)
+- 시계열에서 일부를 회귀, 회귀선을 이어 붙여 평활
+- 부분부분 기울기를 구해서 선으로 이어줌, 구간의 중간 부분에 가중치를 줌
+
+```{r}
+
+loc.reg <- lowess(closale$sales)
+loc.reg
+
+```
+
+```{r}
+
+plot(closale, type='l', lty=4, main="미국 의류 판매", xlab="연도", ylab="판매량")
+lines(closale$date, loc.reg$y, col='red', lwd=3)
+
+```
+
+
+## ACF(Auto Correlation Function) 자기상관
+- 1간격, 2간견, 3간격으로 상관계수를 구하는 것
+- 앞달이 뒷달에 영향을 준다
+
+```{r}
+
+acf(closale$sales)
+
+```
+
